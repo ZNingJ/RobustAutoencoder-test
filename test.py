@@ -34,9 +34,8 @@ def experiment_frame(_file_name):
     inner = 100
     outer = 8
 
-    lamda_list = [0.0023,0.0025,0.0028]
+    lamda_list = [0.003,0.0035,0.004,0.0045]
     layers = [34, 400, 200]  ## S trans
-    # layers = [784, 400, 200]  ## S trans
     folder = r"OutlierDetectionResult"
     if not os.path.isdir(folder):
         os.makedirs(folder)
@@ -66,7 +65,7 @@ if __name__ == "__main__":
     folder = 'OutlierDetectionResult'
     file_name="data/ionosphere.txt"
     experiment_frame(file_name)
-    lambda_list = [0.0023,0.0025,0.0028]   #0.0045,0.0035
+    lambda_list = [0.003,0.0035,0.004,0.0045]   #0.0045,0.0035
     lam_list = list(map(str, lambda_list))
     print(lam_list)
 
@@ -94,7 +93,7 @@ if __name__ == "__main__":
         result_temp = []
         temp_list = [5, 10, 30, 60, 90, 120, 130, 140, 150, 200, 300, 340]
         max_pred = Counter(bi_y)['o']
-        print('max_pre:{0}'.format(max_pred))
+        print('max_pre:{0}'.format(predictions))
         for m in temp_list:
             m_count = 0
             real_count = 0

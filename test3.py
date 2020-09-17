@@ -92,8 +92,6 @@ if __name__ == "__main__":
             y = pd.read_csv(y_loc, header=None, index_col=None, skiprows=0, sep=',')
             y = y.iloc[:,0].values
             print(Counter(y))
-            print(len(y) - Counter(y)[23])
-
             bi_y = list(map(binary_y, y))
             print(Counter(bi_y))
 
@@ -112,7 +110,7 @@ if __name__ == "__main__":
 
                 result_temp = []
                 temp_list = [5,10,15,20,30,50,60,80,100,150]
-                max_pred = Counter(bi_y)['o']
+                max_pred = Counter(predictions)['o']
                 print('max_pre:{0}'.format(max_pred))
                 for m in temp_list:
                     m_count = 0
@@ -196,7 +194,7 @@ if __name__ == "__main__":
                 print('predictions:{0}'.format(Counter(predictions)))
                 result_temp = []
                 temp_list = [20,30,50,60,90,100,150]
-                max_pred = Counter(bi_y)['o']
+                max_pred = Counter(predictions)['o']
                 print('max_pre:{0}'.format(max_pred))
                 for m in temp_list:
                     m_count = 0
@@ -280,7 +278,7 @@ if __name__ == "__main__":
                 result_temp = []
                 temp_list = [5, 10, 15, 25, 30, 35, 45, 50, 55, 60, 80, 90, 100, 110, 120, 140, 150, 160, 170, 180, 190,
                              200]
-                max_pred = Counter(bi_y)['o']
+                max_pred = Counter(predictions)['o']
                 print('max_pre:{0}'.format(max_pred))
                 for m in temp_list:
                     m_count = 0

@@ -63,9 +63,9 @@ def binary_y(value):
 if __name__ == "__main__":
     folder='OutlierDetectionResult'
     filename = r"data/clean2.data"
-    # lambda_list = [0.24,0.25,0.255,0.26,0.265]
-    lambda_list = [0.19,0.2,0.21,0.22,0.23,0.235]
-    # experiment_frame(filename,lambda_list)
+    lambda_list = [0.24,0.25,0.255,0.26,0.265]
+    # lambda_list = [0.19,0.2,0.21,0.22,0.23,0.235]
+    experiment_frame(filename,lambda_list)
     lam_list = list(map(str, lambda_list))
     print(lam_list)
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
         result_temp = []
         temp_list = [1000,2000,3000,4000,5000,6000,6598]
-        max_pred = Counter(bi_y)['o']
+        max_pred = Counter(predictions)['o']
         print('max_pre:{0}'.format(max_pred))
         for m in temp_list:
             m_count = 0
