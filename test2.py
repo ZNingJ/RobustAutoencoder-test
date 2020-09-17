@@ -93,7 +93,8 @@ if __name__ == "__main__":
 
         result_temp = []
         temp_list = [1000,2000,3000,4000,5000,6000,6598]
-        max_pred = Counter(predictions)['o']
+        max_pred = Counter(bi_y)['o']
+        print('max_pre:{0}'.format(max_pred))
         for m in temp_list:
             m_count = 0
             real_count = 0

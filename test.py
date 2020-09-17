@@ -93,7 +93,8 @@ if __name__ == "__main__":
 
         result_temp = []
         temp_list = [5, 10, 30, 60, 90, 120, 130, 140, 150, 200, 300, 340]
-        max_pred = Counter(predictions)['o']
+        max_pred = Counter(bi_y)['o']
+        print('max_pre:{0}'.format(max_pred))
         for m in temp_list:
             m_count = 0
             real_count = 0

@@ -78,6 +78,7 @@ if __name__ == "__main__":
         if dataset==1:
             elem_num=617
             filename=r"data/ISOLET-23/data_23.dat"
+            print(filename)
             X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
             X = X.iloc[:,:617].values
 
@@ -104,14 +105,15 @@ if __name__ == "__main__":
                 S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
                 predictions = list(map(binary_error, np.linalg.norm(S, axis=1)))
                 print("lambda:", lam)
-                print(bi_y)
-                print(Counter(bi_y))
-                print(predictions)
-                print(Counter(predictions))
+                print('bi_y:{0}'.format(bi_y))
+                print('bi_y:{0}'.format(Counter(bi_y)))
+                print('predictions:{0}'.format(predictions))
+                print('predictions:{0}'.format(Counter(predictions)))
 
                 result_temp = []
                 temp_list = [5,10,15,20,30,50,60,80,100,150]
-                max_pred = Counter(predictions)['o']
+                max_pred = Counter(bi_y)['o']
+                print('max_pre:{0}'.format(max_pred))
                 for m in temp_list:
                     m_count = 0
                     real_count = 0
@@ -161,6 +163,7 @@ if __name__ == "__main__":
         if dataset == 2:
             elem_num = 650
             filename = r"data/MF-3/data_3.dat"
+            print(filename)
             X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
             X = X.values
             lambda_list = [3.6,3.7,3.8,3.9]   #3.7
@@ -175,8 +178,6 @@ if __name__ == "__main__":
             y = pd.read_csv(y_loc, header=None, index_col=None, skiprows=0, sep=',')
             y = y.iloc[:, 0].values
             print(Counter(y))
-            print(len(y) - Counter(y)[3])
-
             bi_y = list(map(binary_y2, y))
             print(Counter(bi_y))
 
@@ -189,13 +190,14 @@ if __name__ == "__main__":
                 print(S)
                 predictions = list(map(binary_error, np.linalg.norm(S, axis=1)))
 
-                print(bi_y)
-                print(Counter(bi_y))
-                print(predictions)
-                print(Counter(predictions))
+                print('bi_y:{0}'.format(bi_y))
+                print('bi_y:{0}'.format(Counter(bi_y)))
+                print('predictions:{0}'.format(predictions))
+                print('predictions:{0}'.format(Counter(predictions)))
                 result_temp = []
                 temp_list = [20,30,50,60,90,100,150]
-                max_pred = Counter(predictions)['o']
+                max_pred = Counter(bi_y)['o']
+                print('max_pre:{0}'.format(max_pred))
                 for m in temp_list:
                     m_count = 0
                     real_count = 0
@@ -225,9 +227,7 @@ if __name__ == "__main__":
 
             d = {"lambda": list(map(float, lams)), "precision": precisions, "recall": recalls, "f1": f1s}
             data = pd.DataFrame(d)
-            print(data)
             result = data.sort_values(by=["lambda"], ascending=True)
-            print(result)
 
             l = list(range(len(lams)))
             plt.figure(figsize=(6.5, 4.5))
@@ -280,7 +280,7 @@ if __name__ == "__main__":
                 result_temp = []
                 temp_list = [5, 10, 15, 25, 30, 35, 45, 50, 55, 60, 80, 90, 100, 110, 120, 140, 150, 160, 170, 180, 190,
                              200]
-                max_pred = Counter(predictions)['o']
+                max_pred = Counter(bi_y)['o']
                 print('max_pre:{0}'.format(max_pred))
                 for m in temp_list:
                     m_count = 0
