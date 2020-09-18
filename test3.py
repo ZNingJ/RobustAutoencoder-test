@@ -1,3 +1,5 @@
+import datetime
+
 import PIL.Image as Image
 from data import ImShow as I
 import numpy as np
@@ -70,15 +72,29 @@ def binary_y3(value):
     else:
         return "o"
 
+def binary_y4(value):
+    if value == 5:
+        return "o"
+    else:
+        return "m"
+
+def binary_y5(value):
+    if value == 7:
+        return "o"
+    else:
+        return "m"
+
 if __name__ == "__main__":
 
     folder = 'OutlierDetectionResult'
-    for n in range(1,4):
-        dataset = 3
+    for n in range(1,6):
+        dataset = 5
         if dataset==1:
             elem_num=617
             filename=r"data/ISOLET-23/data_23.dat"
-            print(filename)
+            print('当前数据集是：{0}'.format(filename))
+            t1 = datetime.datetime.now()
+            print('从当前时间开始:{0}'.format(t1))
             X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
             X = X.iloc[:,:617].values
 
@@ -86,8 +102,6 @@ if __name__ == "__main__":
             experiment_frame(X,elem_num,lambda_list)
 
             lam_list = list(map(str, lambda_list))
-            print(lam_list)
-
             y_loc = r"data/ISOLET-23/classid_23.dat"
             y = pd.read_csv(y_loc, header=None, index_col=None, skiprows=0, sep=',')
             y = y.iloc[:,0].values
@@ -100,71 +114,39 @@ if __name__ == "__main__":
             recalls = []
             f1s = []
             for i, lam in enumerate(lam_list):
-                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
-                predictions = list(map(binary_error, np.linalg.norm(S, axis=1)))
                 print("lambda:", lam)
                 print('bi_y:{0}'.format(bi_y))
                 print('bi_y:{0}'.format(Counter(bi_y)))
-                print('predictions:{0}'.format(predictions))
-                print('predictions:{0}'.format(Counter(predictions)))
+                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
+                zscore = np.linalg.norm(S, axis=1)
 
+                zscore_abs = np.fabs(zscore)
                 result_temp = []
                 temp_list = [5,10,15,20,30,50,60,80,100,150]
-                max_pred = Counter(predictions)['o']
-                print('max_pre:{0}'.format(max_pred))
+                print('m的取值有：{0}'.format(temp_list))
                 for m in temp_list:
-                    m_count = 0
-                    real_count = 0
-                    if m > max_pred:
-                        m = max_pred
-                    for index, j in enumerate(predictions):
-                        if m_count < m:
-                            if j == 'o':
-                                m_count += 1
-                                if bi_y[index] == 'o':
-                                    real_count += 1
-                        else:
-                            result_temp.append(real_count)
-                            break
-                print(result_temp)
+                    count = 0
+                    index = np.argpartition(zscore_abs, -m)[-m:]
+                    for each_index in index:
+                        if bi_y[each_index] == 'o':
+                            count += 1
+                    result_temp.append(count)
+                print('result_temp:{0}'.format(result_temp))
 
-                print("precision", precision(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print("recall", recall(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print("f1", f1_score(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                lams.append(lam)
-                precisions.append(precision(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                recalls.append(recall(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                f1s.append(f1_score(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print(CM(bi_y, predictions))
-                print("------------")
-            print(len(lams), len(recalls), len(f1s), len(precisions))
-
-            d = {"lambda": list(map(float, lams)), "precision": precisions, "recall": recalls, "f1": f1s}
-            data = pd.DataFrame(d)
-            print(data)
-            result = data.sort_values(by=["lambda"], ascending=True)
-            print(result)
-
-            l = list(range(len(lams)))
-            plt.figure(figsize=(6.5, 4.5))
-            plt.xlabel("Lambdas")
-            plt.ylabel("Values")
-            plt.plot(l, result.f1, color='r', label="f1")
-            plt.plot(l, result.precision, color="b", label="precision")
-            plt.plot(l, result.recall, color="g", label="recall")
-            plt.legend(["f1", "precision", "recall"], loc='best')
-            plt.xticks(l, result["lambda"], rotation='vertical')
-            plt.title("Anomalies Detection of $l_{2,1}$ Robust Auto-encoder")
-            plt.show()
+            t2 = datetime.datetime.now()
+            print('从当前时间结束:{0}'.format(t2))
+            print('一共用时：{0}'.format(t2 - t1))
             print('第1个数据集完毕')
 
         if dataset == 2:
-            elem_num = 650
+            elem_num = 649
             filename = r"data/MF-3/data_3.dat"
-            print(filename)
+            print('当前数据集是：{0}'.format(filename))
+            t1 = datetime.datetime.now()
+            print('从当前时间开始:{0}'.format(t1))
             X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
-            X = X.values
-            lambda_list = [3.6,3.7,3.8,3.9]   #3.7
+            X = X.iloc[:, :649].as_matrix()
+            lambda_list = [0.0001,0.001, 0.1, 1, 2,3]   #3.7
             experiment_frame(X, elem_num,lambda_list)
             # lambda_list = [2.15, 2.3, 2.45, 2.6, 2.75,
             #              3, 3.15, 3.3, 3.45, 3.6, 3.75, 4]
@@ -184,70 +166,40 @@ if __name__ == "__main__":
             recalls = []
             f1s = []
             for i, lam in enumerate(lam_list):
-                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
-                print(S)
-                predictions = list(map(binary_error, np.linalg.norm(S, axis=1)))
-
+                print("lambda:", lam)
                 print('bi_y:{0}'.format(bi_y))
                 print('bi_y:{0}'.format(Counter(bi_y)))
-                print('predictions:{0}'.format(predictions))
-                print('predictions:{0}'.format(Counter(predictions)))
+                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
+                zscore = np.linalg.norm(S, axis=1)
+
+                zscore_abs = np.fabs(zscore)
                 result_temp = []
-                temp_list = [20,30,50,60,90,100,150]
-                max_pred = Counter(predictions)['o']
-                print('max_pre:{0}'.format(max_pred))
+                temp_list = [20,30,50,90,100,150]
+                print('m的取值有：{0}'.format(temp_list))
                 for m in temp_list:
-                    m_count = 0
-                    real_count = 0
-                    if m > max_pred:
-                        m = max_pred
-                    for index, j in enumerate(predictions):
-                        if m_count < m:
-                            if j == 'o':
-                                m_count += 1
-                                if bi_y[index] == 'o':
-                                    real_count += 1
-                        else:
-                            result_temp.append(real_count)
-                            break
-                print(result_temp)
+                    count = 0
+                    index = np.argpartition(zscore_abs, -m)[-m:]
+                    for each_index in index:
+                        if bi_y[each_index] == 'o':
+                            count += 1
+                    result_temp.append(count)
+                print('result_temp:{0}'.format(result_temp))
 
-                print("precision", precision(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print("recall", recall(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print("f1", f1_score(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                lams.append(lam)
-                precisions.append(precision(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                recalls.append(recall(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                f1s.append(f1_score(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print(CM(bi_y, predictions))
-                print("------------")
-            print(len(lams), len(recalls), len(f1s), len(precisions))
-
-            d = {"lambda": list(map(float, lams)), "precision": precisions, "recall": recalls, "f1": f1s}
-            data = pd.DataFrame(d)
-            result = data.sort_values(by=["lambda"], ascending=True)
-
-            l = list(range(len(lams)))
-            plt.figure(figsize=(6.5, 4.5))
-            plt.xlabel("Lambdas")
-            plt.ylabel("Values")
-            plt.plot(l, result.f1, color='r', label="f1")
-            plt.plot(l, result.precision, color="b", label="precision")
-            plt.plot(l, result.recall, color="g", label="recall")
-            plt.legend(["f1", "precision", "recall"], loc='best')
-            plt.xticks(l, result["lambda"], rotation='vertical')
-            plt.title("Anomalies Detection of $l_{2,1}$ Robust Auto-encoder")
-            plt.show()
+            t2 = datetime.datetime.now()
+            print('从当前时间结束:{0}'.format(t2))
+            print('一共用时：{0}'.format(t2 - t1))
             print('第2个数据集完毕')
 
         if dataset == 3:
             elem_num = 260
             filename = r"data/Arrhythmia_withoutdupl_05_v03.dat"
-            print(filename)
+            print('当前数据集是：{0}'.format(filename))
+            t1 = datetime.datetime.now()
+            print('从当前时间开始:{0}'.format(t1))
             X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=' ')
             X = X.iloc[:, :260].values
             lambda_list = [2.2,2.25,2.3,2.35,2.4]  #2.45, 2.3
-            experiment_frame(X, elem_num,lambda_list)
+            # experiment_frame(X, elem_num,lambda_list)
             # lambda_list = [2.15, 2.3, 2.45, 2.6, 2.75,
             #              3, 3.15, 3.3, 3.45, 3.6, 3.75, 4]
 
@@ -267,61 +219,129 @@ if __name__ == "__main__":
             recalls = []
             f1s = []
             for i, lam in enumerate(lam_list):
-                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
-                print(S)
-                predictions = list(map(binary_error, np.linalg.norm(S, axis=1)))
                 print("lambda:", lam)
                 print('bi_y:{0}'.format(bi_y))
                 print('bi_y:{0}'.format(Counter(bi_y)))
-                print('predictions:{0}'.format(predictions))
-                print('predictions:{0}'.format(Counter(predictions)))
+                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
+                zscore = np.linalg.norm(S, axis=1)
+
+                zscore_abs = np.fabs(zscore)
                 result_temp = []
-                temp_list = [5, 10, 15, 25, 30, 35, 45, 50, 55, 60, 80, 90, 100, 110, 120, 140, 150, 160, 170, 180, 190,
+                temp_list = [5, 10, 15, 25, 30, 35, 40,45, 50, 55, 60, 80, 90, 100, 110, 120, 140, 150, 160, 170, 180, 190,
                              200]
-                max_pred = Counter(predictions)['o']
-                print('max_pre:{0}'.format(max_pred))
+                print('m的取值有：{0}'.format(temp_list))
                 for m in temp_list:
-                    m_count = 0
-                    real_count = 0
-                    if m > max_pred:
-                        m = max_pred
-                    for index, j in enumerate(predictions):
-                        if m_count < m:
-                            if j == 'o':
-                                m_count += 1
-                                if bi_y[index] == 'o':
-                                    real_count += 1
-                        else:
-                            result_temp.append(real_count)
-                            break
-                print(result_temp)
+                    count = 0
+                    index = np.argpartition(zscore_abs, -m)[-m:]
+                    for each_index in index:
+                        if bi_y[each_index] == 'o':
+                            count += 1
+                    result_temp.append(count)
+                print('result_temp:{0}'.format(result_temp))
 
-                print("lambda:", lam)
-                print("precision", precision(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print("recall", recall(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print("f1", f1_score(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                lams.append(lam)
-                precisions.append(precision(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                recalls.append(recall(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                f1s.append(f1_score(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-                print(CM(bi_y, predictions))
-                print("------------")
-            print(len(lams), len(recalls), len(f1s), len(precisions))
-
-            d = {"lambda": list(map(float, lams)), "precision": precisions, "recall": recalls, "f1": f1s}
-            data = pd.DataFrame(d)
-            result = data.sort_values(by=["lambda"], ascending=True)
-            l = list(range(len(lams)))
-            plt.figure(figsize=(6.5, 4.5))
-            plt.xlabel("Lambdas")
-            plt.ylabel("Values")
-            plt.plot(l, result.f1, color='r', label="f1")
-            plt.plot(l, result.precision, color="b", label="precision")
-            plt.plot(l, result.recall, color="g", label="recall")
-            plt.legend(["f1", "precision", "recall"], loc='best')
-            plt.xticks(l, result["lambda"], rotation='vertical')
-            plt.title("Anomalies Detection of $l_{2,1}$ Robust Auto-encoder")
-            plt.show()
+            t2 = datetime.datetime.now()
+            print('从当前时间结束:{0}'.format(t2))
+            print('一共用时：{0}'.format(t2 - t1))
             print('第3个数据集完毕')
+
+        if dataset == 4:
+            elem_num = 649
+            filename = r"data/MF-5/data_5.dat"
+            print('当前数据集是：{0}'.format(filename))
+            t1 = datetime.datetime.now()
+            print('从当前时间开始:{0}'.format(t1))
+            X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
+            X = X.iloc[:, :649].as_matrix()
+
+            lambda_list =[0.0001,0.001, 0.1, 1, 2]
+            experiment_frame(X, elem_num,lambda_list)
+            lam_list = list(map(str, lambda_list))
+            print(lam_list)
+
+            y_loc = r"data/MF-5/classid_5.dat"
+            y = pd.read_csv(y_loc, header=None, index_col=None, skiprows=0, sep=',')
+            y = y.iloc[:, 0].values
+            print(Counter(y))
+            bi_y = list(map(binary_y4, y))
+            print(Counter(bi_y))
+
+            precisions = []
+            lams = []
+            recalls = []
+            f1s = []
+            for i, lam in enumerate(lam_list):
+                print("lambda:", lam)
+                print('bi_y:{0}'.format(bi_y))
+                print('bi_y:{0}'.format(Counter(bi_y)))
+                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
+                zscore = np.linalg.norm(S, axis=1)
+
+                zscore_abs = np.fabs(zscore)
+                result_temp = []
+                temp_list = [20,30,50,60,70,100,150]
+                print('m的取值有：{0}'.format(temp_list))
+                for m in temp_list:
+                    count = 0
+                    index = np.argpartition(zscore_abs, -m)[-m:]
+                    for each_index in index:
+                        if bi_y[each_index] == 'o':
+                            count += 1
+                    result_temp.append(count)
+                print('result_temp:{0}'.format(result_temp))
+
+            t2 = datetime.datetime.now()
+            print('从当前时间结束:{0}'.format(t2))
+            print('一共用时：{0}'.format(t2 - t1))
+            print('第4个数据集完毕')
+
+        if dataset == 5:
+            elem_num = 649
+            filename = r"data/MF-7/data_7.dat"
+            print('当前数据集是：{0}'.format(filename))
+            t1 = datetime.datetime.now()
+            print('从当前时间开始:{0}'.format(t1))
+            X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
+            X = X.iloc[:, :649].as_matrix()
+
+            lambda_list = [0.0001,0.001, 0.1, 1, 2]
+            experiment_frame(X, elem_num, lambda_list)
+            lam_list = list(map(str, lambda_list))
+            print(lam_list)
+
+            y_loc = r"data/MF-7/classid_7.dat"
+            y = pd.read_csv(y_loc, header=None, index_col=None, skiprows=0, sep=',')
+            y = y.iloc[:, 0].values
+            print(Counter(y))
+            bi_y = list(map(binary_y5, y))
+            print(Counter(bi_y))
+
+            precisions = []
+            lams = []
+            recalls = []
+            f1s = []
+            for i, lam in enumerate(lam_list):
+                print("lambda:", lam)
+                print('bi_y:{0}'.format(bi_y))
+                print('bi_y:{0}'.format(Counter(bi_y)))
+                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
+                zscore = np.linalg.norm(S, axis=1)
+
+                zscore_abs = np.fabs(zscore)
+                result_temp = []
+                temp_list = [20, 30, 50, 60, 90, 100, 150]
+                print('m的取值有：{0}'.format(temp_list))
+                for m in temp_list:
+                    count = 0
+                    index = np.argpartition(zscore_abs, -m)[-m:]
+                    for each_index in index:
+                        if bi_y[each_index] == 'o':
+                            count += 1
+                    result_temp.append(count)
+                print('result_temp:{0}'.format(result_temp))
+
+            t2 = datetime.datetime.now()
+            print('从当前时间结束:{0}'.format(t2))
+            print('一共用时：{0}'.format(t2 - t1))
+            print('第5个数据集完毕')
 
 

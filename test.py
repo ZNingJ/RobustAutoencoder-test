@@ -47,14 +47,6 @@ def experiment_frame(_file_name):
                 inner=inner, outer=outer, batch_size=133, inputsize=(28,28))
     os.chdir("../")
 
-
-def binary_error(value):
-    if value == 0.0:
-        return "m"  # 'majority'
-    else:
-        return "o"  # 'outlier'
-
-
 def binary_y(value):
     if value == 1:
         return "m"
@@ -64,7 +56,7 @@ def binary_y(value):
 if __name__ == "__main__":
     folder = 'OutlierDetectionResult'
     file_name="data/ionosphere.txt"
-    experiment_frame(file_name)
+    # experiment_frame(file_name)
     lambda_list = [0.003,0.0035,0.004,0.0045]   #0.0045,0.0035
     lam_list = list(map(str, lambda_list))
     print(lam_list)
@@ -72,7 +64,6 @@ if __name__ == "__main__":
     y_loc = r"data/ionosphere.txt"
     y = np.loadtxt(y_loc, delimiter=",",usecols=(-1,))
     print(Counter(y))
-    print(len(y) - Counter(y)[1])
     bi_y = list(map(binary_y, y))
     print(Counter(bi_y))
 
@@ -81,65 +72,25 @@ if __name__ == "__main__":
     recalls = []
     f1s = []
     for i, lam in enumerate(lam_list):
-        S = np.load(folder + "\\" + "lam" + lam+ "\\" + r"l21S.npk", allow_pickle=True)
-        print(S)
-        predictions = list(map(binary_error, np.linalg.norm(S, axis=1)))
         print("lambda:", lam)
         print('bi_y:{0}'.format(bi_y))
         print('bi_y:{0}'.format(Counter(bi_y)))
-        print('predictions:{0}'.format(predictions))
-        print('predictions:{0}'.format(Counter(predictions)))
+        S = np.load(folder + "\\" + "lam" + lam+ "\\" + r"l21S.npk", allow_pickle=True)
+        zscore=np.linalg.norm(S, axis=1)
 
+        zscore_abs = np.fabs(zscore)
         result_temp = []
-        temp_list = [5, 10, 30, 60, 90, 120, 130, 140, 150, 200, 300, 340]
-        max_pred = Counter(bi_y)['o']
-        print('max_pre:{0}'.format(predictions))
+        temp_list = [5,10,30,60,90,120,130,140,150,200,300,340]
+        print('m的取值有：{0}'.format(temp_list))
         for m in temp_list:
-            m_count = 0
-            real_count = 0
-            s=m
-            if m > max_pred:
-                m = max_pred
-            for index, j in enumerate(predictions):
-                if m_count < m:
-                    if j == 'o':
-                        m_count += 1
-                        if bi_y[index] == 'o':
-                            real_count += 1
-                    if index==len(predictions)-1:
-                        result_temp.append(real_count)
-                else:
-                    result_temp.append(real_count)
-                    break
-        print(result_temp)
+            count = 0
+            index = np.argpartition(zscore_abs, -m)[-m:]
+            for each_index in index:
+                if bi_y[each_index] == 'o':
+                    count += 1
+            result_temp.append(count)
+        print('result_temp:{0}'.format(result_temp))
 
-        print("precision", precision(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-        print("recall", recall(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-        print("f1", f1_score(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-        lams.append(lam)
-        precisions.append(precision(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-        recalls.append(recall(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-        f1s.append(f1_score(bi_y, predictions, labels=["o", "m"], pos_label="o"))
-        print(CM(bi_y, predictions))
-        print("------------")
-    print(len(lams), len(recalls), len(f1s), len(precisions))
 
-    d = {"lambda": list(map(float, lams)), "precision": precisions, "recall": recalls, "f1": f1s}
-    data = pd.DataFrame(d)
-    print(data)
-    result = data.sort_values(by=["lambda"], ascending=True)
-    print(result)
-
-    l = list(range(len(lams)))
-    plt.figure(figsize=(6.5, 4.5))
-    plt.xlabel("Lambdas")
-    plt.ylabel("Values")
-    plt.plot(l, result.f1, color='r', label="f1")
-    plt.plot(l, result.precision, color="b", label="precision")
-    plt.plot(l, result.recall, color="g", label="recall")
-    plt.legend(["f1", "precision", "recall"], loc='best')
-    plt.xticks(l, result["lambda"], rotation='vertical')
-    plt.title("Anomalies Detection of $l_{2,1}$ Robust Auto-encoder")
-    plt.show()
 
 
