@@ -47,13 +47,6 @@ def experiment_frame(X,elem_num,lamda_list):
     os.chdir("../")
 
 
-def binary_error(value):
-    if value == 0.0:
-        return "m"  # 'majority'
-    else:
-        return "o"  # 'outlier'
-
-
 def binary_y(value):
     if value == 23:
         return "o"
@@ -84,11 +77,18 @@ def binary_y5(value):
     else:
         return "m"
 
+def binary_y6(value):
+    if value == 1:
+        return "m"
+    else:
+        return "o"
+
 if __name__ == "__main__":
 
     folder = 'OutlierDetectionResult'
-    for n in range(1,6):
-        dataset = 5
+    for n in range(1,8):
+        dataset = n
+        # 1-ISOLET,2-MF-3,3-Arrhythmia,4-MF-5,5-MF-7,6-ionosphere,7-Musk2
         if dataset==1:
             elem_num=617
             filename=r"data/ISOLET-23/data_23.dat"
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
             X = X.iloc[:,:617].values
 
-            lambda_list = [0.0015,0.0016,0.0017,0.0018]   #0.0017,0.0018  ,0.0015
+            lambda_list = [0.001]   #0.0017,0.0018  ,0.0015
             experiment_frame(X,elem_num,lambda_list)
 
             lam_list = list(map(str, lambda_list))
@@ -109,17 +109,13 @@ if __name__ == "__main__":
             bi_y = list(map(binary_y, y))
             print(Counter(bi_y))
 
-            precisions = []
-            lams = []
-            recalls = []
-            f1s = []
             for i, lam in enumerate(lam_list):
                 print("lambda:", lam)
                 print('bi_y:{0}'.format(bi_y))
                 print('bi_y:{0}'.format(Counter(bi_y)))
                 S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
                 zscore = np.linalg.norm(S, axis=1)
-
+                print('score:{0}'.format(zscore))
                 zscore_abs = np.fabs(zscore)
                 result_temp = []
                 temp_list = [5,10,15,20,30,50,60,80,100,150]
@@ -161,10 +157,6 @@ if __name__ == "__main__":
             bi_y = list(map(binary_y2, y))
             print(Counter(bi_y))
 
-            precisions = []
-            lams = []
-            recalls = []
-            f1s = []
             for i, lam in enumerate(lam_list):
                 print("lambda:", lam)
                 print('bi_y:{0}'.format(bi_y))
@@ -199,7 +191,7 @@ if __name__ == "__main__":
             X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=' ')
             X = X.iloc[:, :260].values
             lambda_list = [2.2,2.25,2.3,2.35,2.4]  #2.45, 2.3
-            # experiment_frame(X, elem_num,lambda_list)
+            experiment_frame(X, elem_num,lambda_list)
             # lambda_list = [2.15, 2.3, 2.45, 2.6, 2.75,
             #              3, 3.15, 3.3, 3.45, 3.6, 3.75, 4]
 
@@ -214,10 +206,6 @@ if __name__ == "__main__":
             print(bi_y)
             print(Counter(bi_y))
 
-            precisions = []
-            lams = []
-            recalls = []
-            f1s = []
             for i, lam in enumerate(lam_list):
                 print("lambda:", lam)
                 print('bi_y:{0}'.format(bi_y))
@@ -265,10 +253,6 @@ if __name__ == "__main__":
             bi_y = list(map(binary_y4, y))
             print(Counter(bi_y))
 
-            precisions = []
-            lams = []
-            recalls = []
-            f1s = []
             for i, lam in enumerate(lam_list):
                 print("lambda:", lam)
                 print('bi_y:{0}'.format(bi_y))
@@ -303,7 +287,7 @@ if __name__ == "__main__":
             X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
             X = X.iloc[:, :649].as_matrix()
 
-            lambda_list = [0.0001,0.001, 0.1, 1, 2]
+            lambda_list = [3.85,3.9,3.95]
             experiment_frame(X, elem_num, lambda_list)
             lam_list = list(map(str, lambda_list))
             print(lam_list)
@@ -315,10 +299,49 @@ if __name__ == "__main__":
             bi_y = list(map(binary_y5, y))
             print(Counter(bi_y))
 
-            precisions = []
-            lams = []
-            recalls = []
-            f1s = []
+            for i, lam in enumerate(lam_list):
+                print("lambda:", lam)
+                print('bi_y:{0}'.format(bi_y))
+                print('bi_y:{0}'.format(Counter(bi_y)))
+                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
+                zscore = np.linalg.norm(S, axis=1)
+                print('zscore:{0}'.format(zscore))
+                zscore_abs = np.fabs(zscore)
+                result_temp = []
+                temp_list = [20, 30, 50, 60, 90, 100, 150]
+                print('m的取值有：{0}'.format(temp_list))
+                for m in temp_list:
+                    count = 0
+                    index = np.argpartition(zscore_abs, -m)[-m:]
+                    for each_index in index:
+                        if bi_y[each_index] == 'o':
+                            count += 1
+                    result_temp.append(count)
+                print('result_temp:{0}'.format(result_temp))
+
+            t2 = datetime.datetime.now()
+            print('从当前时间结束:{0}'.format(t2))
+            print('一共用时：{0}'.format(t2 - t1))
+            print('第5个数据集完毕')
+
+        if dataset==6:
+            elem_num=34
+            filename = "data/ionosphere.txt"
+            print('当前数据集是：{0}'.format(filename))
+            t1 = datetime.datetime.now()
+            print('从当前时间开始:{0}'.format(t1))
+            X = np.loadtxt(filename, delimiter=",", usecols=np.arange(0, 34))
+            lambda_list = [0.003, 0.0035, 0.004, 0.0045]  # 0.0045,0.0035
+            experiment_frame(X, elem_num, lambda_list)
+
+            lam_list = list(map(str, lambda_list))
+            print(lam_list)
+            y_loc = r"data/ionosphere.txt"
+            y = np.loadtxt(y_loc, delimiter=",", usecols=(-1,))
+            print(Counter(y))
+            bi_y = list(map(binary_y6, y))
+            print(Counter(bi_y))
+
             for i, lam in enumerate(lam_list):
                 print("lambda:", lam)
                 print('bi_y:{0}'.format(bi_y))
@@ -328,7 +351,54 @@ if __name__ == "__main__":
 
                 zscore_abs = np.fabs(zscore)
                 result_temp = []
-                temp_list = [20, 30, 50, 60, 90, 100, 150]
+                temp_list = [5, 10, 30, 60, 90, 120, 130, 140, 150, 200, 300, 340]
+                print('m的取值有：{0}'.format(temp_list))
+                for m in temp_list:
+                    count = 0
+                    index = np.argpartition(zscore_abs, -m)[-m:]
+                    for each_index in index:
+                        if bi_y[each_index] == 'o':
+                            count += 1
+                    result_temp.append(count)
+                print('result_temp:{0}'.format(result_temp))
+
+            t2 = datetime.datetime.now()
+            print('从当前时间结束:{0}'.format(t2))
+            print('一共用时：{0}'.format(t2 - t1))
+            print('第5个数据集完毕')
+
+        if dataset==7:
+            elem_num=166
+            filename = r"data/clean2.data"
+            print('当前数据集是：{0}'.format(filename))
+            t1 = datetime.datetime.now()
+            print('从当前时间开始:{0}'.format(t1))
+
+            X = pd.read_csv(filename, header=None, index_col=None, skiprows=0, sep=',')
+            X = X.iloc[:, 2:168].values
+            lambda_list = [0.24, 0.25, 0.255, 0.26, 0.265]
+            experiment_frame(X, elem_num, lambda_list)
+
+            lam_list = list(map(str, lambda_list))
+            print(lam_list)
+
+            y_loc = r"data/clean2.data"
+            y = pd.read_csv(y_loc, header=None, index_col=None, skiprows=0, sep=',')
+            y = y.iloc[:, 168].values
+            print(Counter(y))
+            bi_y = list(map(binary_y3, y))
+            print(Counter(bi_y))
+
+            for i, lam in enumerate(lam_list):
+                print("lambda:", lam)
+                print('bi_y:{0}'.format(bi_y))
+                print('bi_y:{0}'.format(Counter(bi_y)))
+                S = np.load(folder + "\\" + "lam" + lam + "\\" + r"l21S.npk", allow_pickle=True)
+                zscore = np.linalg.norm(S, axis=1)
+
+                zscore_abs = np.fabs(zscore)
+                result_temp = []
+                temp_list = [1000, 2000, 3000, 4000, 5000, 6000, 6598]
                 print('m的取值有：{0}'.format(temp_list))
                 for m in temp_list:
                     count = 0
